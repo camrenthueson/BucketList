@@ -7,6 +7,22 @@ url = st.secrets["SUPABASE_URL"]
 key = st.secrets["SUPABASE_KEY"]
 supabase: Client = create_client(url, key)
 
+# Force columns to stay horizontal on mobile
+st.markdown("""
+    <style>
+    [data-testid="column"] {
+        width: min-content !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        flex-basis: auto !important;
+    }
+    /* This specifically targets the button row container */
+    [data-testid="stHorizontalBlock"] {
+        flex-wrap: nowrap !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 st.set_page_config(page_title="Family Bucket List", layout="wide")
 
 # --- FUNCTIONS ---
@@ -98,8 +114,7 @@ for i, cat_name in enumerate(categories):
                     # Title
                     st.markdown(f"### {item['task_name']}")
                     
-                    # Buttons Row (The spacer at the end keeps them small)
-                    c1, c2, c3, c4, spacer = st.columns([0.15, 0.12, 0.12, 0.12, 0.49])
+                   c1, c2, c3, c4, spacer = st.columns([1, 1, 1, 1, 5])
                     
                     with c1: # Done Checkbox
                         if st.checkbox("Done", key=f"active_check_{item['id']}"):
