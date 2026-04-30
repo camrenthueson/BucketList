@@ -9,17 +9,14 @@ supabase: Client = create_client(url, key)
 
 st.set_page_config(page_title="Family Bucket List", layout="wide")
 
-
 # --- FUNCTIONS ---
 def get_categories():
     res = supabase.table("categories").select("name").execute()
     return [item['name'] for item in res.data]
 
-
 def get_items():
     res = supabase.table("bucket_items").select("*").execute()
     return res.data
-
 
 # --- SIDEBAR: ADDING NEW ITEMS ---
 st.sidebar.header("➕ Add New Adventure")
@@ -49,7 +46,6 @@ all_tabs = st.tabs(tab_names)
 # --- TAB 1: DASHBOARD ---
 with all_tabs[0]:
     st.header("App Management")
-
     col1, col2 = st.columns(2)
 
     with col1:
@@ -88,65 +84,44 @@ with all_tabs[1]:
 
 # --- DYNAMIC CATEGORY TABS ---
 for i, cat_name in enumerate(categories):
-    # i+2 because Dashboard and Favorites are 0 and 1
     with all_tabs[i+2]:
         st.header(f"{cat_name} Goals")
         
-        # Pull fresh data for this specific category
         category_items = [item for item in get_items() if item['category_name'] == cat_name]
         active = [item for item in category_items if not item['is_completed']]
 
         if not active:
-            st.info("No active goals here. Add one in the sidebar!")
+            st.info("No active goals here.")
         else:
-            # HEADER ROW
-            # We add a container to keep things grouped
-            with st.container():
-                h1, h2, h3, h4, h5 = st.columns([0.1, 0.5, 0.1, 0.15, 0.1])
-                h1.caption("DONE")
-                h2.caption("ADVENTURE")
-                h3.caption("FAV")
-                h4.caption("LINK")
-                h5.caption("DEL")
-                st.divider()
-
-            # DATA ROWS
             for item in active:
-                # A container with a border makes each "Card" distinct
                 with st.container(border=True):
-                    # 1. Title on its own line
+                    # Title
                     st.markdown(f"### {item['task_name']}")
                     
-                    # 2. Options Row (Small buttons, no stretching)
-                    # We create 6 columns. The last one [0.4] acts as a "spacer" 
-                    # to push the buttons to the left so they don't stretch on mobile.
-                    btn_c1, btn_c2, btn_c3, btn_c4, btn_c5, spacer = st.columns([0.15, 0.15, 0.15, 0.15, 0.1, 0.4])
+                    # Buttons Row (The spacer at the end keeps them small)
+                    c1, c2, c3, c4, spacer = st.columns([0.15, 0.12, 0.12, 0.12, 0.49])
                     
-                    with btn_c1: # Done
-                        # collapsed label visibility keeps the checkbox tiny
-                        if st.checkbox("Done", key=f"active_check_{item['id']}", label_visibility="visible"):
+                    with c1: # Done Checkbox
+                        if st.checkbox("Done", key=f"active_check_{item['id']}"):
                             supabase.table("bucket_items").update({"is_completed": True}).eq("id", item['id']).execute()
                             st.rerun()
                     
-                    with btn_c2: # Favorite
+                    with c2: # Favorite Button
                         heart_label = "❤️" if item['is_favorite'] else "🤍"
                         if st.button(heart_label, key=f"fav_btn_{item['id']}"):
                             supabase.table("bucket_items").update({"is_favorite": not item['is_favorite']}).eq("id", item['id']).execute()
                             st.rerun()
                     
-                    with btn_c3: # Link
-                        if item.get('image_url'):
-                            # use_container_width=False is the key to preventing full-width buttons
-                            st.link_button("🌐", item['image_url'], use_container_width=False, help="Open Link")
+                    with c3: # Link Button
+                        if item.get('image_url') and item['image_url'].strip():
+                            st.link_button("🌐", item['image_url'], use_container_width=False)
                     
-                    with btn_c4: # Delete
+                    with c4: # Delete Button
                         if st.button("🗑️", key=f"del_btn_{item['id']}"):
                             supabase.table("bucket_items").delete().eq("id", item['id']).execute()
                             st.rerun()
-                
-        # spacer column is left empty to "squeeze" the others to the left
 
-        st.write("---") # Visual break before expander
+        st.write("---") 
 
         # --- COMPLETED ITEMS EXPANDER ---
         with st.expander("✅ See Completed Items"):
@@ -154,7 +129,6 @@ for i, cat_name in enumerate(categories):
             if done:
                 for item in done:
                     d1, d2 = st.columns([0.1, 0.9])
-                    # Unique key including 'done' prefix
                     is_unchecking = d1.checkbox(" ", value=True, key=f"done_check_{item['id']}")
                     if not is_unchecking:
                         supabase.table("bucket_items").update({"is_completed": False}).eq("id", item['id']).execute()
