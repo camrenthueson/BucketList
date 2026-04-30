@@ -112,36 +112,39 @@ for i, cat_name in enumerate(categories):
 
             # DATA ROWS
             for item in active:
-                # We use a unique container for every row to prevent bleeding
-                with st.container():
-                    c1, c2, c3, c4, c5 = st.columns([0.1, 0.5, 0.1, 0.15, 0.1])
+                # A container with a border makes each "Card" distinct
+                with st.container(border=True):
+                    # 1. Title on its own line
+                    st.markdown(f"### {item['task_name']}")
                     
-                    # 1. Complete (Key must be unique across the WHOLE app)
-                    # Adding 'active' to the key prevents clashes with the 'done' list
-                    if c1.checkbox(" ", key=f"active_check_{item['id']}"):
-                        supabase.table("bucket_items").update({"is_completed": True}).eq("id", item['id']).execute()
-                        st.rerun()
+                    # 2. Options Row (Small buttons, no stretching)
+                    # We create 6 columns. The last one [0.4] acts as a "spacer" 
+                    # to push the buttons to the left so they don't stretch on mobile.
+                    btn_c1, btn_c2, btn_c3, btn_c4, btn_c5, spacer = st.columns([0.15, 0.15, 0.15, 0.15, 0.1, 0.4])
                     
-                    # 2. Task Name
-                    c2.markdown(f"**{item['task_name']}**")
+                    with btn_c1: # Done
+                        # collapsed label visibility keeps the checkbox tiny
+                        if st.checkbox("Done", key=f"active_check_{item['id']}", label_visibility="visible"):
+                            supabase.table("bucket_items").update({"is_completed": True}).eq("id", item['id']).execute()
+                            st.rerun()
                     
-                    # 3. Favorite Toggle
-                    heart_label = "❤️" if item['is_favorite'] else "🤍"
-                    if c3.button(heart_label, key=f"fav_btn_{item['id']}"):
-                        new_fav = not item['is_favorite']
-                        supabase.table("bucket_items").update({"is_favorite": new_fav}).eq("id", item['id']).execute()
-                        st.rerun()
+                    with btn_c2: # Favorite
+                        heart_label = "❤️" if item['is_favorite'] else "🤍"
+                        if st.button(heart_label, key=f"fav_btn_{item['id']}"):
+                            supabase.table("bucket_items").update({"is_favorite": not item['is_favorite']}).eq("id", item['id']).execute()
+                            st.rerun()
                     
-                    # 4. URL Link Button
-                    if item.get('image_url'):
-                        c4.link_button("🌐 Open", item['image_url'], use_container_width=True)
-                    else:
-                        c4.write(" ")
-
-                    # 5. Delete Button
-                    if c5.button("🗑️", key=f"del_btn_{item['id']}"):
-                        supabase.table("bucket_items").delete().eq("id", item['id']).execute()
-                        st.rerun()
+                    with btn_c3: # Link
+                        if item.get('image_url'):
+                            # use_container_width=False is the key to preventing full-width buttons
+                            st.link_button("🌐", item['image_url'], use_container_width=False, help="Open Link")
+                    
+                    with btn_c4: # Delete
+                        if st.button("🗑️", key=f"del_btn_{item['id']}"):
+                            supabase.table("bucket_items").delete().eq("id", item['id']).execute()
+                            st.rerun()
+                
+        # spacer column is left empty to "squeeze" the others to the left
 
         st.write("---") # Visual break before expander
 
