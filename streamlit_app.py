@@ -114,7 +114,7 @@ for i, cat_name in enumerate(categories):
                     # Title
                     st.markdown(f"### {item['task_name']}")
                     
-                c1, c2, c3, c4, spacer = st.columns([1, 1, 1, 1, 5])
+                    c1, c2, c3, c4, spacer = st.columns([1, 1, 1, 1, 5])
                     
                     with c1: # Done Checkbox
                         if st.checkbox("Done", key=f"active_check_{item['id']}"):
