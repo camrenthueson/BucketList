@@ -104,7 +104,7 @@ def display_bucket_item(item, is_completed_view=False, context="cat"):
 
         # 3. External Link (Kept the text here as it acts more like a call-to-action)
         if item.get('image_url') and item['image_url'].strip():
-            st.link_button("🌐 Open Adventure Link", item['image_url'], use_container_width=True)
+            st.link_button("🌐", item['image_url'], use_container_width=True)
 # --- SIDEBAR: MANAGEMENT ---
 with st.sidebar:
     st.header("⚙️ Management")
