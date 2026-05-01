@@ -12,33 +12,27 @@ st.set_page_config(page_title="Family Bucket List", layout="wide")
 # CSS for a tight button row
 st.markdown("""
     <style>
-    /* 1. Force the column container to never wrap */
-    [data-testid="column"] {
-        width: auto !important;
-        flex-basis: auto !important;
-        flex-grow: 0 !important;
-        min-width: 0px !important;
+    /* Force everything inside this specific container to be a tight row */
+    .tight-buttons {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 10px;
     }
 
-    [data-testid="stHorizontalBlock"] {
-        display: flex !important;
-        flex-wrap: nowrap !important;
-        justify-content: flex-start !important;
-        gap: 10px !important;
-    }
-
-    /* 2. Shrink the buttons and checkboxes */
+    /* Keep buttons square and neat */
     div.stButton > button {
-        width: 38px !important;
-        height: 38px !important;
-        padding: 0px !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
+        width: 42px !important;
+        height: 42px !important;
+        padding: 0 !important;
     }
-    
-    .stCheckbox {
-        width: 30px !important;
+
+    /* Shrink the checkbox container */
+    div[data-testid="stCheckbox"] {
+        width: fit-content !important;
+        min-width: unset !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -117,28 +111,29 @@ for i, cat_name in enumerate(categories):
                 with st.container(border=True):
                     st.markdown(f"**{item['task_name']}**")
                     
-                    # We use 5 equal columns; the CSS above will shrink them to fit the icons
-                    cols = st.columns([1, 1, 1, 1, 1])
+                    # We start the "Flexbox" row using a div
+                    st.markdown('<div class="tight-buttons">', unsafe_allow_html=True)
                     
-                    with cols[0]:
-                        if st.checkbox("Done", key=f"active_check_{item['id']}", label_visibility="collapsed"):
-                            supabase.table("bucket_items").update({"is_completed": True}).eq("id", item['id']).execute()
-                            st.rerun()
-                    with cols[1]:
-                        heart_label = "❤️" if item['is_favorite'] else "🤍"
-                        if st.button(heart_label, key=f"fav_btn_{item['id']}"):
-                            supabase.table("bucket_items").update({"is_favorite": not item['is_favorite']}).eq("id", item['id']).execute()
-                            st.rerun()
-                    with cols[2]:
-                        if item.get('image_url') and item['image_url'].strip():
-                            st.link_button("🌐", item['image_url'])
-                        else:
-                            st.button("➖", disabled=True, key=f"no_link_{item['id']}")
-                    with cols[3]:
-                        if st.button("🗑️", key=f"del_btn_{item['id']}"):
-                            supabase.table("bucket_items").delete().eq("id", item['id']).execute()
-                            st.rerun()
-                    # cols[4] remains empty as a small buffer
+                    # All buttons/checkboxes go here in a row
+                    if st.checkbox("Done", key=f"active_check_{item['id']}", label_visibility="collapsed"):
+                        supabase.table("bucket_items").update({"is_completed": True}).eq("id", item['id']).execute()
+                        st.rerun()
+            
+                    heart_label = "❤️" if item['is_favorite'] else "🤍"
+                    if st.button(heart_label, key=f"fav_btn_{item['id']}"):
+                        supabase.table("bucket_items").update({"is_favorite": not item['is_favorite']}).eq("id", item['id']).execute()
+                        st.rerun()
+            
+                    if item.get('image_url') and item['image_url'].strip():
+                        st.link_button("🌐", item['image_url'])
+                    else:
+                        st.button("➖", disabled=True, key=f"no_link_{item['id']}")
+            
+                    if st.button("🗑️", key=f"del_btn_{item['id']}"):
+                        supabase.table("bucket_items").delete().eq("id", item['id']).execute()
+                        st.rerun()
+            
+                    st.markdown('</div>', unsafe_allow_html=True)
         
         st.divider()
         with st.expander("✅ Completed Items"):
