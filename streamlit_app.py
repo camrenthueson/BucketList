@@ -70,7 +70,7 @@ def display_bucket_item(item, is_completed_view=False, context="cat"):
         with col1:
             if not is_completed_view:
                 # Added {context} to the key
-                if st.button("✅ Done", key=f"{context}_done_{item['id']}"):
+                if st.button("✅ Done ", key=f"{context}_done_{item['id']}"):
                     supabase.table("bucket_items").update({"is_completed": True}).eq("id", item['id']).execute()
                     st.rerun()
             else:
@@ -86,7 +86,7 @@ def display_bucket_item(item, is_completed_view=False, context="cat"):
                 st.rerun()
 
         with col3:
-            if st.button("🗑️ Del", key=f"{context}_del_{item['id']}"):
+            if st.button("🗑️ Del  ", key=f"{context}_del_{item['id']}"):
                 supabase.table("bucket_items").delete().eq("id", item['id']).execute()
                 st.rerun()
 
