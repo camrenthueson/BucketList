@@ -94,24 +94,30 @@ with st.sidebar:
             if new_cat_name:
                 supabase.table("categories").insert({"name": new_cat_name}).execute()
                 st.rerun()
-        st.divider()
-        del_cat = st.selectbox("Delete a Category", options=["Select..."] + categories)
-        if st.button("Delete Category 🗑️"):
-            if del_cat != "Select...":
-                # Check how many items will be lost
-                check_items = supabase.table("bucket_items").select("id").eq("category_name", del_cat).execute()
-                item_count = len(check_items.data)
         
-                if item_count > 0:
-                    # Alert the user about the cascade
-                    st.warning(f"⚠️ Warning: Deleting '{del_cat}' will also delete {item_count} items. This cannot be undone!")
-                    if st.button(f"Yes, delete {del_cat} and all items"):
-                        supabase.table("categories").delete().eq("name", del_cat).execute()
-                        st.rerun()
-        else:
-            # Clean delete if no items exist
-            supabase.table("categories").delete().eq("name", del_cat).execute()
-            st.rerun()
+        st.divider()
+        
+        del_cat = st.selectbox("Delete a Category", options=["Select..."] + categories)
+        
+        # Only show delete options if a real category is selected
+        if del_cat != "Select...":
+            # 1. Check if there's a risk of losing items
+            check_items = supabase.table("bucket_items").select("id").eq("category_name", del_cat).execute()
+            item_count = len(check_items.data)
+
+            if item_count > 0:
+                # 2. Require a checkbox confirmation to enable the button
+                st.warning(f"⚠️ '{del_cat}' has {item_count} items.")
+                confirm_cascade = st.checkbox(f"Delete all {item_count} items permanently?")
+                
+                if st.button("Delete Category 🗑️", disabled=not confirm_cascade):
+                    supabase.table("categories").delete().eq("name", del_cat).execute()
+                    st.rerun()
+            else:
+                # 3. Simple delete if the category is empty
+                if st.button("Delete Category 🗑️"):
+                    supabase.table("categories").delete().eq("name", del_cat).execute()
+                    st.rerun()
 
     with st.expander("🎨 Custom Theme"):
         # Color pickers for full customization
