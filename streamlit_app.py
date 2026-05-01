@@ -13,17 +13,16 @@ st.set_page_config(page_title="Family Bucket List", layout="wide")
 # CSS 
 st.markdown("""
     <style>
-    /* Make the expander header look more like a list item */
     .stExpander {
         border-radius: 10px !important;
         margin-bottom: 10px !important;
     }
 
-    /* Style the buttons to be square and centered */
-    div.stButton > button {
-        width: 45px !important;  /* Fixed width */
-        height: 45px !important; /* Fixed height */
-        margin: 0 auto !important; /* Centers the button in the column */
+    /* ONLY target buttons inside our columns (the icons) */
+    [data-testid="column"] div.stButton > button {
+        width: 45px !important;
+        height: 45px !important;
+        margin: 0 auto !important;
         display: flex !important;
         justify-content: center !important;
         align-items: center !important;
@@ -32,13 +31,12 @@ st.markdown("""
         padding: 0px !important;
     }
 
-    /* Keep the link button full-width since it has text */
-    div.stLinkButton > a {
-        width: 100% !important;
-        margin-top: 10px !important;
+    /* Keep the BIG buttons (Spin, Add, Create) normal size */
+    div.stButton > button {
+        border-radius: 8px !important;
     }
 
-    /* This centers the column content itself */
+    /* Center the icons in the columns */
     [data-testid="column"] {
         display: flex;
         justify-content: center;
@@ -77,28 +75,37 @@ def display_bucket_item(item, is_completed_view=False, context="cat"):
             if img:
                 st.image(img, use_container_width=True, caption=title)
         
+        # Now using 4 columns for 4 square buttons
         col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
+        
         with col1:
             if not is_completed_view:
-                if st.button("✅", key=f"{context}_done_{item['id']}"):
+                if st.button("✅", key=f"{context}_done_{item['id']}", help="Complete"):
                     supabase.table("bucket_items").update({"is_completed": True}).eq("id", item['id']).execute()
                     st.rerun()
             else:
-                if st.button("🔄", key=f"{context}_undo_{item['id']}"):
+                if st.button("🔄", key=f"{context}_undo_{item['id']}", help="Restore"):
                     supabase.table("bucket_items").update({"is_completed": False}).eq("id", item['id']).execute()
                     st.rerun()
+
         with col2:
             heart_emoji = "💔" if item['is_favorite'] else "❤️"
-            if st.button(heart_emoji, key=f"{context}_fav_{item['id']}"):
+            if st.button(heart_emoji, key=f"{context}_fav_{item['id']}", help="Favorite"):
                 supabase.table("bucket_items").update({"is_favorite": not item['is_favorite']}).eq("id", item['id']).execute()
                 st.rerun()
+
         with col3:
-            if st.button("🗑️", key=f"{context}_del_{item['id']}"):
+            # The link is now a square button in its own column
+            if item.get('image_url') and item['image_url'].startswith("http"):
+                # We use st.link_button but the CSS will make it a square because it's in a column
+                st.link_button("🌐", item['image_url'], help="Open Link")
+            else:
+                st.button("🚫", key=f"{context}_nolink_{item['id']}", disabled=True, help="No link")
+
+        with col4:
+            if st.button("🗑️", key=f"{context}_del_{item['id']}", help="Delete"):
                 supabase.table("bucket_items").delete().eq("id", item['id']).execute()
                 st.rerun()
-        with col4:
-            if item.get('image_url') and item['image_url'].strip():
-                st.link_button("🌐", item['image_url'], use_container_width=True)
 
 # Pre-fetch categories for the sidebar and the tabs
 categories = get_categories()
