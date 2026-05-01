@@ -129,7 +129,7 @@ with st.sidebar:
 
     /* Ensure the sidebar matches or stays distinct */
     [data-testid="stSidebar"] {{
-        background-color: rgba(0, 0, 0, 0.1) !important;
+        background-color: rgba(0, 0, 0, 0.8) !important;
     }}
 
     /* Make expanders slightly visible against the new background */
