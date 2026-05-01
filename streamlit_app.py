@@ -116,14 +116,14 @@ with st.sidebar:
                 st.rerun()
 
     with st.expander("🎨 Theme"):
-        selected_bg = st.selectbox("Choose Background", options=list(bg_options.keys()))
-        bg_color = bg_options[selected_bg]
-        text_color = bg_options[selected_theme]["text"]
+        selected_bg_name = st.selectbox("Choose Background", options=list(bg_options.keys()))
+        bg_color = bg_options[selected_bg_name]["bg"]
+        text_color = bg_options[selected_bg_name]["text"]
 
     st.markdown(f"""
     <style>
     /* Target the root app containers */
-    .stApp, .stAppHeader, [data-testid="stAppViewContainer"] {{
+    .stApp, [data-testid="stHeader"], [data-testid="stAppViewContainer"] {{
         background-color: {bg_color} !important;
         color: {text_color} !important;
     }}
