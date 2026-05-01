@@ -77,7 +77,7 @@ def display_bucket_item(item, is_completed_view=False, context="cat"):
             if img:
                 st.image(img, use_container_width=True, caption=title)
         
-        col1, col2, col3 = st.columns([1, 1, 1])
+        col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
         with col1:
             if not is_completed_view:
                 if st.button("✅", key=f"{context}_done_{item['id']}"):
@@ -96,9 +96,9 @@ def display_bucket_item(item, is_completed_view=False, context="cat"):
             if st.button("🗑️", key=f"{context}_del_{item['id']}"):
                 supabase.table("bucket_items").delete().eq("id", item['id']).execute()
                 st.rerun()
-
-        if item.get('image_url') and item['image_url'].strip():
-            st.link_button("🌐", item['image_url'], use_container_width=True)
+        with col4:
+            if item.get('image_url') and item['image_url'].strip():
+                st.link_button("🌐", item['image_url'], use_container_width=True)
 
 # Pre-fetch categories for the sidebar and the tabs
 categories = get_categories()
