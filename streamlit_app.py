@@ -127,15 +127,42 @@ all_tabs = st.tabs(tab_names)
 
 # --- TAB 1: ROULETTE ---
 with all_tabs[0]:
-    items = [i for i in get_items() if not i['is_completed']]
-    if items:
-        if st.button("🎰 SPIN!"):
-            choice = random.choice(items)
+    st.header("🎲 Adventure Roulette")
+    st.write("Can't decide? Let the app choose your next family adventure!")
+
+    # 1. Get fresh data
+    all_items = get_items()
+    # Filter for active items only (we don't want to spin for something already done!)
+    roulette_pool = [i for i in all_items if not i['is_completed']]
+
+    if roulette_pool:
+        if st.button("🎰 SPIN THE WHEEL", use_container_width=True):
+            import random
+            import time
+            
+            # Simple "Loading" effect for suspense
+            progress_bar = st.progress(0)
+            for percent_complete in range(100):
+                time.sleep(0.01)
+                progress_bar.progress(percent_complete + 1)
+            
+            winner = random.choice(roulette_pool)
+            # Store the winner in session state so it stays on screen after the spin
+            st.session_state.roulette_winner = winner
             st.balloons()
-            st.info(f"The winner is: **{choice['task_name']}**!")
-            if choice['image_url']: st.image(choice['image_url'], use_container_width=True)
+
+        # 2. Display the winner using our rich UI
+        if 'roulette_winner' in st.session_state:
+            st.success(f"### The Winner is: {st.session_state.roulette_winner['task_name']}!")
+            
+            # Use the function with a unique 'spin' context
+            display_bucket_item(
+                st.session_state.roulette_winner, 
+                is_completed_view=False, 
+                context="spin_tab"
+            )
     else:
-        st.write("Add some items in the sidebar first!")
+        st.info("Add some adventures to your categories to start spinning!")
 
 # --- TAB 2: FAVORITES ---
 with all_tabs[1]:
