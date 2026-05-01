@@ -135,7 +135,7 @@ with st.sidebar:
 
    /* Sidebar - keep it dark with white text for contrast */
     [data-testid="stSidebar"], [data-testid="stSidebar"] * {{
-        background-color: rgba(0, 0, 0, 0.8) !important;
+        background-color: rgba(0, 0, 0, 0.6) !important;
         color: white !important;
     }}
 
