@@ -98,8 +98,20 @@ with st.sidebar:
         del_cat = st.selectbox("Delete a Category", options=["Select..."] + categories)
         if st.button("Delete Category 🗑️"):
             if del_cat != "Select...":
-                supabase.table("categories").delete().eq("name", del_cat).execute()
-                st.rerun()
+                # Check how many items will be lost
+                check_items = supabase.table("bucket_items").select("id").eq("category_name", del_cat).execute()
+                item_count = len(check_items.data)
+        
+                if item_count > 0:
+                    # Alert the user about the cascade
+                    st.warning(f"⚠️ Warning: Deleting '{del_cat}' will also delete {item_count} items. This cannot be undone!")
+                    if st.button(f"Yes, delete {del_cat} and all items"):
+                        supabase.table("categories").delete().eq("name", del_cat).execute()
+                        st.rerun()
+        else:
+            # Clean delete if no items exist
+            supabase.table("categories").delete().eq("name", del_cat).execute()
+            st.rerun()
 
     with st.expander("🎨 Custom Theme"):
         # Color pickers for full customization
