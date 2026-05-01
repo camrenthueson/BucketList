@@ -12,38 +12,14 @@ st.set_page_config(page_title="Family Bucket List", layout="wide")
 # CSS for a tight button row
 st.markdown("""
     <style>
-    /* 1. FORCE COLUMNS TO STAY SIDE-BY-SIDE ON MOBILE */
-    [data-testid="column"] {
-        width: fit-content !important;
-        flex: unset !important;
-        min-width: unset !important;
+    /* Make the expander header look more like a list item */
+    .stExpander {
+        border-radius: 10px !important;
+        margin-bottom: 10px !important;
     }
-
-    [data-testid="stHorizontalBlock"] {
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        align-items: center !important;
-        justify-content: flex-start !important;
-        gap: 10px !important;
-    }
-
-    /* 2. PREVENT BUTTONS FROM EXPANDING */
-    .stButton, .stLinkButton, .stCheckbox {
-        width: fit-content !important;
-    }
-
+    /* Simple button styling */
     div.stButton > button, div.stLinkButton > a {
-        width: 40px !important;
-        height: 40px !important;
-        padding: 0px !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-    }
-
-    /* 3. FIX CHECKBOX ALIGNMENT */
-    [data-testid="stCheckbox"] {
+        width: 100% !important; /* On mobile, full-width buttons inside expanders are very easy to tap */
         margin-bottom: 5px !important;
     }
     </style>
@@ -120,32 +96,35 @@ for i, cat_name in enumerate(categories):
             st.info("No active goals here.")
         else:
             for item in active:
-                with st.container(border=True):
-                    st.markdown(f"**{item['task_name']}**")
+                # The title of the expander is the Task Name
+                # Adding an emoji based on favorite status is a nice touch!
+                label = f"❤️ {item['task_name']}" if item['is_favorite'] else item['task_name']
+                
+                with st.expander(label):
+                    # 1. Show the image if they provided a URL
+                    if item.get('image_url') and item['image_url'].strip():
+                        st.image(item['image_url'], use_container_width=True)
+                        st.divider()
+            
+                    # 2. Action Buttons
+                    # On mobile, stacking these vertically inside the expander 
+                    # is actually much better for "fat-thumbing" the right button.
                     
-                    # We create 5 columns. The CSS above will make c1-c4 tiny 
-                    # and keep them all in one row regardless of screen size.
-                    c1, c2, c3, c4, c5 = st.columns([1, 1, 1, 1, 5])
-                    
-                    with c1:
-                        if st.checkbox("Done", key=f"active_check_{item['id']}", label_visibility="collapsed"):
-                            supabase.table("bucket_items").update({"is_completed": True}).eq("id", item['id']).execute()
-                            st.rerun()
-                    with c2:
-                        heart_label = "❤️" if item['is_favorite'] else "🤍"
-                        if st.button(heart_label, key=f"fav_btn_{item['id']}"):
-                            supabase.table("bucket_items").update({"is_favorite": not item['is_favorite']}).eq("id", item['id']).execute()
-                            st.rerun()
-                    with c3:
-                        if item.get('image_url') and item['image_url'].strip():
-                            st.link_button("🌐", item['image_url'])
-                        else:
-                            st.button("➖", disabled=True, key=f"no_link_{item['id']}")
-                    with c4:
-                        if st.button("🗑️", key=f"del_btn_{item['id']}"):
-                            supabase.table("bucket_items").delete().eq("id", item['id']).execute()
-                            st.rerun()
-                    # c5 is the 'spacer' that eats up the rest of the right side
+                    if st.button("✅ Mark as Complete", key=f"done_{item['id']}"):
+                        supabase.table("bucket_items").update({"is_completed": True}).eq("id", item['id']).execute()
+                        st.rerun()
+            
+                    fav_text = "💔 Remove from Favorites" if item['is_favorite'] else "❤️ Add to Favorites"
+                    if st.button(fav_text, key=f"fav_{item['id']}"):
+                        supabase.table("bucket_items").update({"is_favorite": not item['is_favorite']}).eq("id", item['id']).execute()
+                        st.rerun()
+            
+                    if item.get('image_url') and item['image_url'].strip():
+                        st.link_button("🌐 Open Adventure Link", item['image_url'])
+            
+                    if st.button("🗑️ Delete Adventure", key=f"del_{item['id']}"):
+                        supabase.table("bucket_items").delete().eq("id", item['id']).execute()
+                        st.rerun()
         
         st.divider()
         with st.expander("✅ Completed Items"):
