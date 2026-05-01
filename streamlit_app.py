@@ -12,27 +12,39 @@ st.set_page_config(page_title="Family Bucket List", layout="wide")
 # CSS for a tight button row
 st.markdown("""
     <style>
-    /* Force everything inside this specific container to be a tight row */
-    .tight-buttons {
-        display: flex;
-        flex-direction: row;
-        justify-content: flex-start;
-        gap: 12px;
-        align-items: center;
-        margin-bottom: 10px;
-    }
-
-    /* Keep buttons square and neat */
-    div.stButton > button {
-        width: 42px !important;
-        height: 42px !important;
-        padding: 0 !important;
-    }
-
-    /* Shrink the checkbox container */
-    div[data-testid="stCheckbox"] {
+    /* 1. FORCE COLUMNS TO STAY SIDE-BY-SIDE ON MOBILE */
+    [data-testid="column"] {
         width: fit-content !important;
+        flex: unset !important;
         min-width: unset !important;
+    }
+
+    [data-testid="stHorizontalBlock"] {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 10px !important;
+    }
+
+    /* 2. PREVENT BUTTONS FROM EXPANDING */
+    .stButton, .stLinkButton, .stCheckbox {
+        width: fit-content !important;
+    }
+
+    div.stButton > button, div.stLinkButton > a {
+        width: 40px !important;
+        height: 40px !important;
+        padding: 0px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    /* 3. FIX CHECKBOX ALIGNMENT */
+    [data-testid="stCheckbox"] {
+        margin-bottom: 5px !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -111,29 +123,29 @@ for i, cat_name in enumerate(categories):
                 with st.container(border=True):
                     st.markdown(f"**{item['task_name']}**")
                     
-                    # We start the "Flexbox" row using a div
-                    st.markdown('<div class="tight-buttons">', unsafe_allow_html=True)
+                    # We create 5 columns. The CSS above will make c1-c4 tiny 
+                    # and keep them all in one row regardless of screen size.
+                    c1, c2, c3, c4, c5 = st.columns([1, 1, 1, 1, 5])
                     
-                    # All buttons/checkboxes go here in a row
-                    if st.checkbox("Done", key=f"active_check_{item['id']}", label_visibility="collapsed"):
-                        supabase.table("bucket_items").update({"is_completed": True}).eq("id", item['id']).execute()
-                        st.rerun()
-            
-                    heart_label = "❤️" if item['is_favorite'] else "🤍"
-                    if st.button(heart_label, key=f"fav_btn_{item['id']}"):
-                        supabase.table("bucket_items").update({"is_favorite": not item['is_favorite']}).eq("id", item['id']).execute()
-                        st.rerun()
-            
-                    if item.get('image_url') and item['image_url'].strip():
-                        st.link_button("🌐", item['image_url'])
-                    else:
-                        st.button("➖", disabled=True, key=f"no_link_{item['id']}")
-            
-                    if st.button("🗑️", key=f"del_btn_{item['id']}"):
-                        supabase.table("bucket_items").delete().eq("id", item['id']).execute()
-                        st.rerun()
-            
-                    st.markdown('</div>', unsafe_allow_html=True)
+                    with c1:
+                        if st.checkbox("Done", key=f"active_check_{item['id']}", label_visibility="collapsed"):
+                            supabase.table("bucket_items").update({"is_completed": True}).eq("id", item['id']).execute()
+                            st.rerun()
+                    with c2:
+                        heart_label = "❤️" if item['is_favorite'] else "🤍"
+                        if st.button(heart_label, key=f"fav_btn_{item['id']}"):
+                            supabase.table("bucket_items").update({"is_favorite": not item['is_favorite']}).eq("id", item['id']).execute()
+                            st.rerun()
+                    with c3:
+                        if item.get('image_url') and item['image_url'].strip():
+                            st.link_button("🌐", item['image_url'])
+                        else:
+                            st.button("➖", disabled=True, key=f"no_link_{item['id']}")
+                    with c4:
+                        if st.button("🗑️", key=f"del_btn_{item['id']}"):
+                            supabase.table("bucket_items").delete().eq("id", item['id']).execute()
+                            st.rerun()
+                    # c5 is the 'spacer' that eats up the rest of the right side
         
         st.divider()
         with st.expander("✅ Completed Items"):
