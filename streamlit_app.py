@@ -140,11 +140,17 @@ with all_tabs[0]:
 # --- TAB 2: FAVORITES ---
 with all_tabs[1]:
     st.header("❤️ Your Top Adventures")
-    # Fetch only items marked as favorites
-    fav_items = [i for i in get_items() if i['is_favorite']]
     
-    for fav in fav_items:
-        display_bucket_item(fav, is_completed_view=fav['is_completed'], context="fav")
+    # 1. Grab the absolute latest data from the DB
+    all_current_items = get_items()
+    
+    # 2. Filter for favorites
+    fav_items = [i for i in all_current_items if i.get('is_favorite') == True]
+    
+    if fav_items:
+        # 3. Sort them so the most recent favorites are at the top (optional)
+        for fav in fav_items:
+            display_bucket_item(fav, is_completed_view=fav['is_completed'], context="fav_tab")
     else:
         st.info("You haven't favorited any adventures yet. Click the ❤️ on any item to see it here!")
 
