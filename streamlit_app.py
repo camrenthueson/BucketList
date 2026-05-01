@@ -12,14 +12,20 @@ st.set_page_config(page_title="Family Bucket List", layout="wide")
 # Force columns to stay horizontal on mobile
 st.markdown("""
     <style>
-    [data-testid="column"] {
-        width: min-content !important;
-        flex-direction: row !important;
-        align-items: center !important;
-        flex-basis: auto !important;
+    /* Create a tight row for buttons */
+    .button-row {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        gap: 10px; /* Adjust this to make buttons closer or further apart */
+        align-items: center;
+        margin-top: 10px;
     }
-    [data-testid="stHorizontalBlock"] {
-        flex-wrap: nowrap !important;
+    
+    /* Small fix to make sure Streamlit buttons don't have extra margin */
+    div.stButton > button {
+        width: auto !important;
+        padding: 0px 10px !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -113,7 +119,10 @@ for i, cat_name in enumerate(categories):
             for item in active:
                 with st.container(border=True):
                     st.markdown(f"### {item['task_name']}")
-                    c1, c2, c3, c4, spacer = st.columns([1, 1, 1, 1, 5])
+                    
+                    # We create a container that "holds" our buttons horizontally
+                    # Using a single row of columns with very small widths works better with the CSS
+                    c1, c2, c3, c4, spacer = st.columns([0.1, 0.1, 0.1, 0.1, 0.6])
                     
                     with c1:
                         if st.checkbox("Done", key=f"active_check_{item['id']}", label_visibility="collapsed"):
@@ -126,12 +135,11 @@ for i, cat_name in enumerate(categories):
                             st.rerun()
                     with c3:
                         if item.get('image_url') and item['image_url'].strip():
-                            st.link_button("🌐", item['image_url'], use_container_width=False)
+                            st.link_button("🌐", item['image_url'])
                     with c4:
                         if st.button("🗑️", key=f"del_btn_{item['id']}"):
                             supabase.table("bucket_items").delete().eq("id", item['id']).execute()
                             st.rerun()
-
         st.divider()
 
         with st.expander("✅ See Completed Items"):
