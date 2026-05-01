@@ -143,5 +143,13 @@ for i, cat_name in enumerate(categories):
         st.divider()
         with st.expander("✅ Completed Items"):
             done = [item for item in category_items if item['is_completed']]
-            for item in done:
-                st.write(f"~~{item['task_name']}~~")
+            if done:
+                for item in done:
+                    # Added a checkbox to allow "un-completing" an item
+                    d1, d2 = st.columns([0.1, 0.9])
+                    if d1.checkbox(" ", value=True, key=f"done_check_{item['id']}") == False:
+                        supabase.table("bucket_items").update({"is_completed": False}).eq("id", item['id']).execute()
+                        st.rerun()
+                    d2.markdown(f"~~{item['task_name']}~~")
+            else:
+                st.write("Nothing finished yet.")
