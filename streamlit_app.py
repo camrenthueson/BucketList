@@ -14,12 +14,12 @@ st.set_page_config(page_title="Family Bucket List", layout="wide")
 
 # Define your background options
 bg_options = {
-    "Default (Light)": "#f0f2f6",
-    "Midnight Blue": "#1e2a38",
-    "Forest Green": "#2d3a3a",
-    "Sunset Orange": "#ff7e5f",
-    "Soft Lavender": "#e6e6fa",
-    "Dark Mode": "#0e1117"
+    "Default (Light)": {"bg": "#f0f2f6", "text": "#31333f"},
+    "Midnight Blue": {"bg": "#1e2a38", "text": "#ffffff"},
+    "Forest Green": {"bg": "#2d3a3a", "text": "#ffffff"},
+    "Sunset Orange": {"bg": "#ff7e5f", "text": "#ffffff"},
+    "Soft Lavender": {"bg": "#e6e6fa", "text": "#31333f"},
+    "Dark Mode": {"bg": "#0e1117", "text": "#ffffff"}
 }
 
 
@@ -118,18 +118,30 @@ with st.sidebar:
     with st.expander("🎨 Theme"):
         selected_bg = st.selectbox("Choose Background", options=list(bg_options.keys()))
         bg_color = bg_options[selected_bg]
-
+        text_color = bg_options[selected_theme]["text"]
 
     st.markdown(f"""
     <style>
     /* Target the root app containers */
     .stApp, .stAppHeader, [data-testid="stAppViewContainer"] {{
         background-color: {bg_color} !important;
+        color: {text_color} !important;
     }}
 
-    /* Ensure the sidebar matches or stays distinct */
-    [data-testid="stSidebar"] {{
+    /* Force all headers and labels to use the chosen text color */
+    h1, h2, h3, p, span, label, .stMarkdown {{
+        color: {text_color} !important;
+    }}
+
+   /* Sidebar - keep it dark with white text for contrast */
+    [data-testid="stSidebar"], [data-testid="stSidebar"] * {{
         background-color: rgba(0, 0, 0, 0.8) !important;
+        color: white !important;
+    }}
+
+    /* Fix for Tab text color */
+    button[data-baseweb="tab"] p {{
+        color: {text_color} !important;
     }}
 
     /* Make expanders slightly visible against the new background */
@@ -139,8 +151,8 @@ with st.sidebar:
         border-radius: 10px !important;
     }}
 
-    /* ONLY target buttons inside our columns (the icons) */
-    [data-testid="column"] div.stButton > button {{
+    [data-testid="column"] div.stButton > button, 
+    [data-testid="column"] div.stLinkButton > a {{
         width: 45px !important;
         height: 45px !important;
         margin: 0 auto !important;
