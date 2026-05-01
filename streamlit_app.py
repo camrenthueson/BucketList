@@ -19,21 +19,27 @@ bg_options = {
     "Forest Green": "#2d3a3a",
     "Sunset Orange": "#ff7e5f",
     "Soft Lavender": "#e6e6fa",
-    "Family Reunion (Dark)": "#262730"
+    "Dark Mode": "#0e1117"
 }
 
 st.markdown("""
     <style>
-    /* This targets the main background of the app */
-    .stApp {{
-        background-color: {bg_color};
+    /* Target the root app containers */
+    .stApp, .stAppHeader, [data-testid="stAppViewContainer"] {{
+        background-color: {bg_color} !important;
     }}
-    
-    .stExpander {
-        background-color: rgba(255, 255, 255, 0.05) !important; /* Makes expanders slightly transparent to show BG */
+
+    /* Ensure the sidebar matches or stays distinct */
+    [data-testid="stSidebar"] {{
+        background-color: rgba(0, 0, 0, 0.1) !important;
+    }}
+
+    /* Make expanders slightly visible against the new background */
+    .stExpander {{
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
         border-radius: 10px !important;
-        margin-bottom: 10px !important;
-    }
+    }}
 
     /* ONLY target buttons inside our columns (the icons) */
     [data-testid="column"] div.stButton > button {
