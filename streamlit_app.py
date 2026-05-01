@@ -117,25 +117,28 @@ for i, cat_name in enumerate(categories):
                 with st.container(border=True):
                     st.markdown(f"**{item['task_name']}**")
                     
-                    # THE TRICK: Using columns but forcing them to stay tiny and not stretch
-                    c1, c2, c3, c4, spacer = st.columns([0.08, 0.08, 0.08, 0.08, 0.68])
+                    # We use 5 equal columns; the CSS above will shrink them to fit the icons
+                    cols = st.columns([1, 1, 1, 1, 1])
                     
-                    with c1:
+                    with cols[0]:
                         if st.checkbox("Done", key=f"active_check_{item['id']}", label_visibility="collapsed"):
                             supabase.table("bucket_items").update({"is_completed": True}).eq("id", item['id']).execute()
                             st.rerun()
-                    with c2:
+                    with cols[1]:
                         heart_label = "❤️" if item['is_favorite'] else "🤍"
                         if st.button(heart_label, key=f"fav_btn_{item['id']}"):
                             supabase.table("bucket_items").update({"is_favorite": not item['is_favorite']}).eq("id", item['id']).execute()
                             st.rerun()
-                    with c3:
-                        if item.get('image_url'):
+                    with cols[2]:
+                        if item.get('image_url') and item['image_url'].strip():
                             st.link_button("🌐", item['image_url'])
-                    with c4:
+                        else:
+                            st.button("➖", disabled=True, key=f"no_link_{item['id']}")
+                    with cols[3]:
                         if st.button("🗑️", key=f"del_btn_{item['id']}"):
                             supabase.table("bucket_items").delete().eq("id", item['id']).execute()
                             st.rerun()
+                    # cols[4] remains empty as a small buffer
         
         st.divider()
         with st.expander("✅ Completed Items"):
