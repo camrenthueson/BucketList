@@ -10,10 +10,27 @@ supabase: Client = create_client(url, key)
 
 st.set_page_config(page_title="Family Bucket List", layout="wide")
 
-# CSS 
+# -------------CSS 
+
+# Define your background options
+bg_options = {
+    "Default (Light)": "#f0f2f6",
+    "Midnight Blue": "#1e2a38",
+    "Forest Green": "#2d3a3a",
+    "Sunset Orange": "#ff7e5f",
+    "Soft Lavender": "#e6e6fa",
+    "Family Reunion (Dark)": "#262730"
+}
+
 st.markdown("""
     <style>
+    /* This targets the main background of the app */
+    .stApp {{
+        background-color: {bg_color};
+    }}
+    
     .stExpander {
+        background-color: rgba(255, 255, 255, 0.05) !important; /* Makes expanders slightly transparent to show BG */
         border-radius: 10px !important;
         margin-bottom: 10px !important;
     }
@@ -135,6 +152,10 @@ with st.sidebar:
             if del_cat != "Select...":
                 supabase.table("categories").delete().eq("name", del_cat).execute()
                 st.rerun()
+
+    with st.expander("🎨 Theme"):
+        selected_bg = st.selectbox("Choose Background", options=list(bg_options.keys()))
+        bg_color = bg_options[selected_bg]
 
 # --- MAIN APP UI ---
 st.title("🌟 Family Bucket List 2026")
