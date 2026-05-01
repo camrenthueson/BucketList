@@ -51,6 +51,51 @@ def get_preview_data(url):
         # If the site is down or blocks scraping, we fail gracefully
         return None, None
 
+def display_bucket_item(item, is_completed_view=False):
+    """
+    Renders the expander UI for a single bucket item.
+    is_completed_view: If True, it flips the 'Check' button to a 'Restore' button.
+    """
+    label = f"❤️ {item['task_name']}" if item['is_favorite'] else item['task_name']
+    if is_completed_view:
+        label = f"✅ {label}"
+    
+    with st.expander(label):
+        # 1. Preview Image
+        if item.get('image_url'):
+            img, title = get_preview_data(item['image_url'])
+            if img:
+                st.image(img, use_container_width=True, caption=title)
+        
+        # 2. Action Row (Horizontal cluster for the main actions)
+        col1, col2, col3 = st.columns([1, 1, 1])
+        
+        with col1:
+            # Check/Uncheck logic
+            if not is_completed_view:
+                if st.button("Complete", key=f"done_{item['id']}"):
+                    supabase.table("bucket_items").update({"is_completed": True}).eq("id", item['id']).execute()
+                    st.rerun()
+            else:
+                if st.button("Restore", key=f"undo_{item['id']}"):
+                    supabase.table("bucket_items").update({"is_completed": False}).eq("id", item['id']).execute()
+                    st.rerun()
+
+        with col2:
+            fav_text = "Unfavorite" if item['is_favorite'] else "Favorite"
+            if st.button(fav_text, key=f"fav_{item['id']}"):
+                supabase.table("bucket_items").update({"is_favorite": not item['is_favorite']}).eq("id", item['id']).execute()
+                st.rerun()
+
+        with col3:
+            if st.button("Delete", key=f"del_{item['id']}"):
+                supabase.table("bucket_items").delete().eq("id", item['id']).execute()
+                st.rerun()
+
+        # 3. External Link (Separate button since it's a different style)
+        if item.get('image_url') and item['image_url'].strip():
+            st.link_button("🌐 Open Website", item['image_url'], use_container_width=True)
+
 # --- SIDEBAR: MANAGEMENT ---
 with st.sidebar:
     st.header("⚙️ Management")
@@ -107,56 +152,22 @@ for i, cat_name in enumerate(categories):
     with all_tabs[i+2]:
         st.header(f"{cat_name}")
         category_items = [item for item in get_items() if item['category_name'] == cat_name]
-        active = [item for item in category_items if not item['is_completed']]
-
-        if not active:
-            st.info("No active goals here.")
-        else:
-            for item in active:
-                # The title of the expander is the Task Name
-                # Adding an emoji based on favorite status is a nice touch!
-                label = f"❤️ {item['task_name']}" if item['is_favorite'] else item['task_name']
-                
-                with st.expander(label):
-                    # 1. Show the image if they provided a URL
-                    if item.get('image_url'):
-                        img, title = get_preview_data(item['image_url'])
-                        
-                        if img:
-                            st.image(img, use_container_width=True, caption=title)
-                        else:
-                            st.info("No preview available for this link.")
-            
-                    # 2. Action Buttons
-                    # On mobile, stacking these vertically inside the expander 
-                    # is actually much better for "fat-thumbing" the right button.
-                    
-                    if st.button("✅ Mark as Complete", key=f"done_{item['id']}"):
-                        supabase.table("bucket_items").update({"is_completed": True}).eq("id", item['id']).execute()
-                        st.rerun()
-            
-                    fav_text = "💔 Remove from Favorites" if item['is_favorite'] else "❤️ Add to Favorites"
-                    if st.button(fav_text, key=f"fav_{item['id']}"):
-                        supabase.table("bucket_items").update({"is_favorite": not item['is_favorite']}).eq("id", item['id']).execute()
-                        st.rerun()
-            
-                    if item.get('image_url') and item['image_url'].strip():
-                        st.link_button("🌐 Open Adventure Link", item['image_url'])
-            
-                    if st.button("🗑️ Delete Adventure", key=f"del_{item['id']}"):
-                        supabase.table("bucket_items").delete().eq("id", item['id']).execute()
-                        st.rerun()
         
+        # ACTIVE SECTION
+        active = [item for item in category_items if not item['is_completed']]
+        if active:
+            for item in active:
+                display_bucket_item(item, is_completed_view=False)
+        else:
+            st.info("All goals finished here! 🚀")
+
         st.divider()
-        with st.expander("✅ Completed Items"):
+
+        # COMPLETED SECTION
+        with st.expander("✅ See Completed Items"):
             done = [item for item in category_items if item['is_completed']]
             if done:
                 for item in done:
-                    # Added a checkbox to allow "un-completing" an item
-                    d1, d2 = st.columns([0.1, 0.9])
-                    if d1.checkbox(" ", value=True, key=f"done_check_{item['id']}") == False:
-                        supabase.table("bucket_items").update({"is_completed": False}).eq("id", item['id']).execute()
-                        st.rerun()
-                    d2.markdown(f"~~{item['task_name']}~~")
+                    display_bucket_item(item, is_completed_view=True)
             else:
-                st.write("Nothing finished yet.")
+                st.write("Nothing completed yet.")
