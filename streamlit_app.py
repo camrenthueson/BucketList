@@ -22,51 +22,7 @@ bg_options = {
     "Dark Mode": "#0e1117"
 }
 
-st.markdown("""
-    <style>
-    /* Target the root app containers */
-    .stApp, .stAppHeader, [data-testid="stAppViewContainer"] {{
-        background-color: {bg_color} !important;
-    }}
 
-    /* Ensure the sidebar matches or stays distinct */
-    [data-testid="stSidebar"] {{
-        background-color: rgba(0, 0, 0, 0.1) !important;
-    }}
-
-    /* Make expanders slightly visible against the new background */
-    .stExpander {{
-        background-color: rgba(255, 255, 255, 0.05) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 10px !important;
-    }}
-
-    /* ONLY target buttons inside our columns (the icons) */
-    [data-testid="column"] div.stButton > button {
-        width: 45px !important;
-        height: 45px !important;
-        margin: 0 auto !important;
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
-        font-size: 22px !important;
-        border-radius: 8px !important;
-        padding: 0px !important;
-    }
-
-    /* Keep the BIG buttons (Spin, Add, Create) normal size */
-    div.stButton > button {
-        border-radius: 8px !important;
-    }
-
-    /* Center the icons in the columns */
-    [data-testid="column"] {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    </style>
-""", unsafe_allow_html=True)
 
 # --- FUNCTIONS ---
 def get_categories():
@@ -162,6 +118,53 @@ with st.sidebar:
     with st.expander("🎨 Theme"):
         selected_bg = st.selectbox("Choose Background", options=list(bg_options.keys()))
         bg_color = bg_options[selected_bg]
+
+
+    st.markdown(f"""
+    <style>
+    /* Target the root app containers */
+    .stApp, .stAppHeader, [data-testid="stAppViewContainer"] {{
+        background-color: {bg_color} !important;
+    }}
+
+    /* Ensure the sidebar matches or stays distinct */
+    [data-testid="stSidebar"] {{
+        background-color: rgba(0, 0, 0, 0.1) !important;
+    }}
+
+    /* Make expanders slightly visible against the new background */
+    .stExpander {{
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 10px !important;
+    }}
+
+    /* ONLY target buttons inside our columns (the icons) */
+    [data-testid="column"] div.stButton > button {{
+        width: 45px !important;
+        height: 45px !important;
+        margin: 0 auto !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        font-size: 22px !important;
+        border-radius: 8px !important;
+        padding: 0px !important;
+    }}
+
+    /* Keep the BIG buttons (Spin, Add, Create) normal size */
+    div.stButton > button {{
+        border-radius: 8px !important;
+    }}
+
+    /* Center the icons in the columns */
+    [data-testid="column"] {{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }}
+    </style>
+""", unsafe_allow_html=True)
 
 # --- MAIN APP UI ---
 st.title("🌟 Family Bucket List 2026")
