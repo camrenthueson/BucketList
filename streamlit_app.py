@@ -10,16 +10,20 @@ supabase: Client = create_client(url, key)
 
 st.set_page_config(page_title="Family Bucket List", layout="wide")
 
-# CSS for a clean, professional list and square emoji buttons
+# CSS 
 st.markdown("""
     <style>
+    /* Make the expander header look more like a list item */
     .stExpander {
         border-radius: 10px !important;
         margin-bottom: 10px !important;
     }
+
+    /* Style the buttons to be square and centered */
     div.stButton > button {
-        width: 100% !important;
-        height: 45px !important;
+        width: 45px !important;  /* Fixed width */
+        height: 45px !important; /* Fixed height */
+        margin: 0 auto !important; /* Centers the button in the column */
         display: flex !important;
         justify-content: center !important;
         align-items: center !important;
@@ -27,9 +31,18 @@ st.markdown("""
         border-radius: 8px !important;
         padding: 0px !important;
     }
+
+    /* Keep the link button full-width since it has text */
     div.stLinkButton > a {
         width: 100% !important;
         margin-top: 10px !important;
+    }
+
+    /* This centers the column content itself */
+    [data-testid="column"] {
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -85,7 +98,7 @@ def display_bucket_item(item, is_completed_view=False, context="cat"):
                 st.rerun()
 
         if item.get('image_url') and item['image_url'].strip():
-            st.link_button("🌐 Open Adventure Link", item['image_url'], use_container_width=True)
+            st.link_button("🌐", item['image_url'], use_container_width=True)
 
 # Pre-fetch categories for the sidebar and the tabs
 categories = get_categories()
