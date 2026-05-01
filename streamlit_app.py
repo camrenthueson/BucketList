@@ -142,9 +142,17 @@ with all_tabs[0]:
 
 # --- TAB 2: FAVORITES ---
 with all_tabs[1]:
+    st.header("❤️ Your Top Adventures")
+    # Fetch only items marked as favorites
     fav_items = [i for i in get_items() if i['is_favorite']]
-    for fav in fav_items:
-        st.write(f"❤️ {fav['task_name']} ({fav['category_name']})")
+    
+    if fav_items:
+        for fav in fav_items:
+            # We call the exact same function here!
+            # It will show the image, links, and all buttons automatically.
+            display_bucket_item(fav, is_completed_view=fav['is_completed'])
+    else:
+        st.info("You haven't favorited any adventures yet. Click the ❤️ on any item to see it here!")
 
 # --- DYNAMIC CATEGORY TABS ---
 for i, cat_name in enumerate(categories):
