@@ -10,7 +10,7 @@ supabase: Client = create_client(url, key)
 
 st.set_page_config(page_title="Family Bucket List", layout="wide")
 
-# CSS for a tight button row
+# CSS for a clean, professional list and square emoji buttons
 st.markdown("""
     <style>
     /* Make the expander header look more like a list item */
@@ -18,14 +18,26 @@ st.markdown("""
         border-radius: 10px !important;
         margin-bottom: 10px !important;
     }
-    /* Simple button styling */
-    div.stButton > button, div.stLinkButton > a {
-        width: 100% !important; /* On mobile, full-width buttons inside expanders are very easy to tap */
-        margin-bottom: 5px !important;
+
+    /* Style the buttons to be square and centered */
+    div.stButton > button {
+        width: 100% !important;
+        height: 45px !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        font-size: 22px !important;
+        border-radius: 8px !important;
+        padding: 0px !important;
+    }
+
+    /* Keep the link button full-width since it has text */
+    div.stLinkButton > a {
+        width: 100% !important;
+        margin-top: 10px !important;
     }
     </style>
 """, unsafe_allow_html=True)
-
 # --- FUNCTIONS ---
 def get_categories():
     res = supabase.table("categories").select("name").execute()
