@@ -29,6 +29,7 @@ def get_preview_data(url):
     except Exception:
         return None, None
 
+@st.fragment
 def display_bucket_item(item, is_completed_view=False, context="cat"):
     label = f"❤️ {item['task_name']}" if item['is_favorite'] else item['task_name']
     if is_completed_view:
@@ -47,17 +48,17 @@ def display_bucket_item(item, is_completed_view=False, context="cat"):
             if not is_completed_view:
                 if st.button("✅", key=f"{context}_done_{item['id']}", help="Complete"):
                     supabase.table("bucket_items").update({"is_completed": True}).eq("id", item['id']).execute()
-                    st.rerun()
+                    st.rerun(scope="fragment")
             else:
                 if st.button("🔄", key=f"{context}_undo_{item['id']}", help="Restore"):
                     supabase.table("bucket_items").update({"is_completed": False}).eq("id", item['id']).execute()
-                    st.rerun()
+                    st.rerun(scope="fragment")
 
         with col2:
             heart_emoji = "💔" if item['is_favorite'] else "❤️"
             if st.button(heart_emoji, key=f"{context}_fav_{item['id']}", help="Favorite"):
                 supabase.table("bucket_items").update({"is_favorite": not item['is_favorite']}).eq("id", item['id']).execute()
-                st.rerun()
+                st.rerun(scope="fragment")
 
         with col3:
             # The link is now a square button in its own column
@@ -70,7 +71,7 @@ def display_bucket_item(item, is_completed_view=False, context="cat"):
         with col4:
             if st.button("🗑️", key=f"{context}_del_{item['id']}", help="Delete"):
                 supabase.table("bucket_items").delete().eq("id", item['id']).execute()
-                st.rerun()
+                st.rerun(scope="fragment")
 
 # Pre-fetch categories for the sidebar and the tabs
 categories = get_categories()
