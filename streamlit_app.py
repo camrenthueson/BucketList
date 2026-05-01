@@ -12,18 +12,34 @@ st.set_page_config(page_title="Family Bucket List", layout="wide")
 # CSS for a tight button row
 st.markdown("""
     <style>
-    /* This forces the buttons into a tight group on the left */
-    .button-container {
-        display: flex;
-        flex-direction: row;
-        justify-content: flex-start;
-        gap: 15px; 
-        align-items: center;
-        padding: 10px 0;
+    /* 1. Force the column container to never wrap */
+    [data-testid="column"] {
+        width: auto !important;
+        flex-basis: auto !important;
+        flex-grow: 0 !important;
+        min-width: 0px !important;
     }
-    /* Make buttons and checkboxes look consistent */
-    .stCheckbox { margin-bottom: 0 !important; padding-bottom: 5px; }
-    div.stButton > button { width: 40px !important; height: 40px !important; padding: 0 !important; }
+
+    [data-testid="stHorizontalBlock"] {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        justify-content: flex-start !important;
+        gap: 10px !important;
+    }
+
+    /* 2. Shrink the buttons and checkboxes */
+    div.stButton > button {
+        width: 38px !important;
+        height: 38px !important;
+        padding: 0px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    .stCheckbox {
+        width: 30px !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
