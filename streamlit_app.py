@@ -51,50 +51,47 @@ def get_preview_data(url):
         # If the site is down or blocks scraping, we fail gracefully
         return None, None
 
-def display_bucket_item(item, is_completed_view=False):
+def display_bucket_item(item, is_completed_view=False, context="cat"):
     """
-    Renders the expander UI for a single bucket item with emojis.
+    context: A string to make keys unique (e.g., 'cat', 'fav', 'spin')
     """
     label = f"❤️ {item['task_name']}" if item['is_favorite'] else item['task_name']
     if is_completed_view:
         label = f"✅ {label}"
     
     with st.expander(label):
-        # 1. Preview Image
         if item.get('image_url'):
             img, title = get_preview_data(item['image_url'])
             if img:
                 st.image(img, use_container_width=True, caption=title)
         
-        # 2. Action Row
         col1, col2, col3 = st.columns([1, 1, 1])
         
         with col1:
             if not is_completed_view:
-                if st.button("✅ Done", key=f"done_{item['id']}"):
+                # Added {context} to the key
+                if st.button("✅ Done", key=f"{context}_done_{item['id']}"):
                     supabase.table("bucket_items").update({"is_completed": True}).eq("id", item['id']).execute()
                     st.rerun()
             else:
-                if st.button("🔄 Undo", key=f"undo_{item['id']}"):
+                if st.button("🔄 Undo", key=f"{context}_undo_{item['id']}"):
                     supabase.table("bucket_items").update({"is_completed": False}).eq("id", item['id']).execute()
                     st.rerun()
 
         with col2:
             heart_emoji = "💔" if item['is_favorite'] else "❤️"
             fav_label = "Unfav" if item['is_favorite'] else "Fav"
-            if st.button(f"{heart_emoji} {fav_label}", key=f"fav_{item['id']}"):
+            if st.button(f"{heart_emoji} {fav_label}", key=f"{context}_fav_{item['id']}"):
                 supabase.table("bucket_items").update({"is_favorite": not item['is_favorite']}).eq("id", item['id']).execute()
                 st.rerun()
 
         with col3:
-            if st.button("🗑️ Del", key=f"del_{item['id']}"):
+            if st.button("🗑️ Del", key=f"{context}_del_{item['id']}"):
                 supabase.table("bucket_items").delete().eq("id", item['id']).execute()
                 st.rerun()
 
-        # 3. External Link
         if item.get('image_url') and item['image_url'].strip():
             st.link_button("🌐 Open Website", item['image_url'], use_container_width=True)
-
 # --- SIDEBAR: MANAGEMENT ---
 with st.sidebar:
     st.header("⚙️ Management")
@@ -146,11 +143,8 @@ with all_tabs[1]:
     # Fetch only items marked as favorites
     fav_items = [i for i in get_items() if i['is_favorite']]
     
-    if fav_items:
-        for fav in fav_items:
-            # We call the exact same function here!
-            # It will show the image, links, and all buttons automatically.
-            display_bucket_item(fav, is_completed_view=fav['is_completed'])
+    for fav in fav_items:
+        display_bucket_item(fav, is_completed_view=fav['is_completed'], context="fav")
     else:
         st.info("You haven't favorited any adventures yet. Click the ❤️ on any item to see it here!")
 
@@ -164,7 +158,7 @@ for i, cat_name in enumerate(categories):
         active = [item for item in category_items if not item['is_completed']]
         if active:
             for item in active:
-                display_bucket_item(item, is_completed_view=False)
+                display_bucket_item(item, is_completed_view=False, context="cat_act")
         else:
             st.info("All goals finished here! 🚀")
 
@@ -175,6 +169,6 @@ for i, cat_name in enumerate(categories):
             done = [item for item in category_items if item['is_completed']]
             if done:
                 for item in done:
-                    display_bucket_item(item, is_completed_view=True)
+                    display_bucket_item(item, is_completed_view=True, context="cat_done")
             else:
                 st.write("Nothing completed yet.")
