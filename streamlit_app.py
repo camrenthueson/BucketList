@@ -115,10 +115,11 @@ with st.sidebar:
                 supabase.table("categories").delete().eq("name", del_cat).execute()
                 st.rerun()
 
-    with st.expander("🎨 Theme"):
-        selected_bg_name = st.selectbox("Choose Background", options=list(bg_options.keys()))
-        bg_color = bg_options[selected_bg_name]["bg"]
-        text_color = bg_options[selected_bg_name]["text"]
+    with st.expander("🎨 Custom Theme"):
+        # Color pickers for full customization
+        bg_color = st.color_picker("Background Color", "#0E1117")
+        text_color = st.color_picker("Text Color", "#FFFFFF")
+        btn_color = st.color_picker("Button/Icon Color", "#FF4B4B")
 
     st.markdown(f"""
     <style>
@@ -151,17 +152,19 @@ with st.sidebar:
         border-radius: 10px !important;
     }}
 
+    /* Square Buttons with Custom Color */
     [data-testid="column"] div.stButton > button, 
     [data-testid="column"] div.stLinkButton > a {{
         width: 45px !important;
         height: 45px !important;
-        margin: 0 auto !important;
+        background-color: {btn_color} !important;
+        color: white !important; /* Icons usually look best in white */
+        border: none !important;
         display: flex !important;
         justify-content: center !important;
         align-items: center !important;
         font-size: 22px !important;
         border-radius: 8px !important;
-        padding: 0px !important;
     }}
 
     /* Keep the BIG buttons (Spin, Add, Create) normal size */
@@ -175,6 +178,12 @@ with st.sidebar:
         justify-content: center;
         align-items: center;
     }}
+
+    /* Tab text fix */
+    button[data-baseweb="tab"] p {{
+        color: {text_color} !important;
+    }}
+    
     </style>
 """, unsafe_allow_html=True)
 
