@@ -53,8 +53,7 @@ def get_preview_data(url):
 
 def display_bucket_item(item, is_completed_view=False):
     """
-    Renders the expander UI for a single bucket item.
-    is_completed_view: If True, it flips the 'Check' button to a 'Restore' button.
+    Renders the expander UI for a single bucket item with emojis.
     """
     label = f"❤️ {item['task_name']}" if item['is_favorite'] else item['task_name']
     if is_completed_view:
@@ -67,32 +66,32 @@ def display_bucket_item(item, is_completed_view=False):
             if img:
                 st.image(img, use_container_width=True, caption=title)
         
-        # 2. Action Row (Horizontal cluster for the main actions)
+        # 2. Action Row
         col1, col2, col3 = st.columns([1, 1, 1])
         
         with col1:
-            # Check/Uncheck logic
             if not is_completed_view:
-                if st.button("Complete", key=f"done_{item['id']}"):
+                if st.button("✅ Done", key=f"done_{item['id']}"):
                     supabase.table("bucket_items").update({"is_completed": True}).eq("id", item['id']).execute()
                     st.rerun()
             else:
-                if st.button("Restore", key=f"undo_{item['id']}"):
+                if st.button("🔄 Undo", key=f"undo_{item['id']}"):
                     supabase.table("bucket_items").update({"is_completed": False}).eq("id", item['id']).execute()
                     st.rerun()
 
         with col2:
-            fav_text = "Unfavorite" if item['is_favorite'] else "Favorite"
-            if st.button(fav_text, key=f"fav_{item['id']}"):
+            heart_emoji = "💔" if item['is_favorite'] else "❤️"
+            fav_label = "Unfav" if item['is_favorite'] else "Fav"
+            if st.button(f"{heart_emoji} {fav_label}", key=f"fav_{item['id']}"):
                 supabase.table("bucket_items").update({"is_favorite": not item['is_favorite']}).eq("id", item['id']).execute()
                 st.rerun()
 
         with col3:
-            if st.button("Delete", key=f"del_{item['id']}"):
+            if st.button("🗑️ Del", key=f"del_{item['id']}"):
                 supabase.table("bucket_items").delete().eq("id", item['id']).execute()
                 st.rerun()
 
-        # 3. External Link (Separate button since it's a different style)
+        # 3. External Link
         if item.get('image_url') and item['image_url'].strip():
             st.link_button("🌐 Open Website", item['image_url'], use_container_width=True)
 
