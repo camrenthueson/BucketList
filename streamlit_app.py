@@ -1,6 +1,7 @@
 import streamlit as st
 from supabase import create_client, Client
 import random
+from linkpreview import link_preview
 
 # 1. Database Connection
 url = st.secrets["SUPABASE_URL"]
@@ -33,6 +34,22 @@ def get_categories():
 def get_items():
     res = supabase.table("bucket_items").select("*").execute()
     return res.data
+
+def get_preview_data(url):
+    """
+    Tries to grab the title and image from a URL.
+    Returns (image_url, title) or (None, None) if it fails.
+    """
+    if not url or not url.startswith("http"):
+        return None, None
+        
+    try:
+        # The 'grabber' visits the site and pulls the metadata
+        preview = link_preview(url)
+        return preview.absolute_image, preview.title
+    except Exception:
+        # If the site is down or blocks scraping, we fail gracefully
+        return None, None
 
 # --- SIDEBAR: MANAGEMENT ---
 with st.sidebar:
@@ -102,9 +119,13 @@ for i, cat_name in enumerate(categories):
                 
                 with st.expander(label):
                     # 1. Show the image if they provided a URL
-                    if item.get('image_url') and item['image_url'].strip():
-                        st.image(item['image_url'], use_container_width=True)
-                        st.divider()
+                    if item.get('image_url'):
+                        img, title = get_preview_data(item['image_url'])
+                        
+                        if img:
+                            st.image(img, use_container_width=True, caption=title)
+                        else:
+                            st.info("No preview available for this link.")
             
                     # 2. Action Buttons
                     # On mobile, stacking these vertically inside the expander 
