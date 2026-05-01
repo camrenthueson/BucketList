@@ -10,20 +10,6 @@ supabase: Client = create_client(url, key)
 
 st.set_page_config(page_title="Family Bucket List", layout="wide")
 
-# -------------CSS 
-
-# Define your background options
-bg_options = {
-    "Default (Light)": {"bg": "#f0f2f6", "text": "#31333f"},
-    "Midnight Blue": {"bg": "#1e2a38", "text": "#ffffff"},
-    "Forest Green": {"bg": "#2d3a3a", "text": "#ffffff"},
-    "Sunset Orange": {"bg": "#ff7e5f", "text": "#ffffff"},
-    "Soft Lavender": {"bg": "#e6e6fa", "text": "#31333f"},
-    "Dark Mode": {"bg": "#0e1117", "text": "#ffffff"}
-}
-
-
-
 # --- FUNCTIONS ---
 def get_categories():
     res = supabase.table("categories").select("name").execute()
@@ -134,9 +120,13 @@ with st.sidebar:
         color: {text_color} !important;
     }}
 
-   /* Sidebar - keep it dark with white text for contrast */
-    [data-testid="stSidebar"], [data-testid="stSidebar"] * {{
-        background-color: rgba(0, 0, 0, 0.6) !important;
+     /* Sidebar - Solid contrast */
+    [data-testid="stSidebar"] {{
+        background-color: rgba(0, 0, 0, 0.8) !important;
+    }}
+
+    /* Force Sidebar text to stay white so it's always readable */
+    [data-testid="stSidebar"] * {{
         color: white !important;
     }}
 
@@ -170,6 +160,12 @@ with st.sidebar:
     /* Keep the BIG buttons (Spin, Add, Create) normal size */
     div.stButton > button {{
         border-radius: 8px !important;
+    }}
+
+    /* Hover effect for buttons */
+    [data-testid="column"] div.stButton > button:hover {{
+        opacity: 0.8 !important;
+        color: white !important;
     }}
 
     /* Center the icons in the columns */
