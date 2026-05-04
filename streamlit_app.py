@@ -36,10 +36,14 @@ def display_bucket_item(item, is_completed_view=False, context="cat"):
         label = f"✅ {label}"
     
     with st.expander(label):
+        # We no longer call get_preview_data() here. 
+        # We just show what's already in the 'item' dictionary from the DB.
         if item.get('image_url'):
-            img, title = get_preview_data(item['image_url'])
-            if img:
-                st.image(img, use_container_width=True, caption=title)
+            st.image(
+                item['image_url'], 
+                use_container_width=True, 
+                caption=item.get('preview_title') # This is the new field we're saving
+            )
         
         # Now using 4 columns for 4 square buttons
         col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
@@ -83,10 +87,24 @@ with st.sidebar:
         with st.form("add_item_form", clear_on_submit=True):
             new_task = st.text_input("What is the goal?")
             selected_cat = st.selectbox("Which category?", options=categories if categories else ["None"])
-            img_url = st.text_input("Image URL (optional)")
+            raw_url = st.text_input("Link/URL (optional)") # Renamed for clarity
+            
             if st.form_submit_button("Add to List"):
                 if new_task and selected_cat != "None":
-                    supabase.table("bucket_items").insert({"task_name": new_task, "category_name": selected_cat, "image_url": img_url}).execute()
+                    final_img = None
+                    final_title = None
+                    
+                    # Fetch preview data ONCE right here
+                    if raw_url:
+                        final_img, final_title = get_preview_data(raw_url)
+                    
+                    # Insert everything into the DB
+                    supabase.table("bucket_items").insert({
+                        "task_name": new_task, 
+                        "category_name": selected_cat, 
+                        "image_url": final_img if final_img else raw_url, # Store the actual image link
+                        "preview_title": final_title
+                    }).execute()
                     st.rerun()
 
     with st.expander("📂 Manage Categories"):
