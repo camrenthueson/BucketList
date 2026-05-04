@@ -65,10 +65,9 @@ def display_bucket_item(item, is_completed_view=False, context="cat"):
                 st.rerun(scope="fragment")
 
         with col3:
-            # The link is now a square button in its own column
-            if item.get('image_url') and item['image_url'].startswith("http"):
-                # We use st.link_button but the CSS will make it a square because it's in a column
-                st.link_button("🌐", item['image_url'], help="Open Link")
+            # Change item.get('image_url') to item.get('website_url')
+            if item.get('website_url') and item['website_url'].startswith("http"):
+                st.link_button("🌐", item['website_url'], help="Open Link")
             else:
                 st.button("🚫", key=f"{context}_nolink_{item['id']}", disabled=True, help="No link")
 
@@ -81,31 +80,28 @@ def display_bucket_item(item, is_completed_view=False, context="cat"):
 categories = get_categories()
 
 # --- SIDEBAR ---
-with st.sidebar:
-    st.header("⚙️ Management")
-    with st.expander("➕ Add New Adventure", expanded=True):
-        with st.form("add_item_form", clear_on_submit=True):
-            new_task = st.text_input("What is the goal?")
-            selected_cat = st.selectbox("Which category?", options=categories if categories else ["None"])
-            raw_url = st.text_input("Link/URL (optional)") # Renamed for clarity
-            
-            if st.form_submit_button("Add to List"):
-                if new_task and selected_cat != "None":
-                    final_img = None
-                    final_title = None
-                    
-                    # Fetch preview data ONCE right here
-                    if raw_url:
-                        final_img, final_title = get_preview_data(raw_url)
-                    
-                    # Insert everything into the DB
-                    supabase.table("bucket_items").insert({
-                        "task_name": new_task, 
-                        "category_name": selected_cat, 
-                        "image_url": final_img if final_img else raw_url, # Store the actual image link
-                        "preview_title": final_title
-                    }).execute()
-                    st.rerun()
+with st.expander("➕ Add New Adventure", expanded=True):
+    with st.form("add_item_form", clear_on_submit=True):
+        new_task = st.text_input("What is the goal?")
+        selected_cat = st.selectbox("Which category?", options=categories if categories else ["None"])
+        raw_url = st.text_input("Link/URL (optional)") 
+        
+        if st.form_submit_button("Add to List"):
+            if new_task and selected_cat != "None":
+                final_img = None
+                final_title = None
+                
+                if raw_url:
+                    final_img, final_title = get_preview_data(raw_url)
+                
+                supabase.table("bucket_items").insert({
+                    "task_name": new_task, 
+                    "category_name": selected_cat, 
+                    "image_url": final_img if final_img else raw_url, # The "pretty" image
+                    "website_url": raw_url,                           # The actual destination
+                    "preview_title": final_title
+                }).execute()
+                st.rerun()
 
     with st.expander("📂 Manage Categories"):
         new_cat_name = st.text_input("New Category Name")
