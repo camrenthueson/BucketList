@@ -104,12 +104,12 @@ with st.sidebar:
                     }).execute()
                     st.rerun()
     
-        with st.expander("📂 Manage Categories"):
-            new_cat_name = st.text_input("New Category Name")
-            if st.button("Create Category"):
-                if new_cat_name:
-                    supabase.table("categories").insert({"name": new_cat_name}).execute()
-                    st.rerun()
+    with st.expander("📂 Manage Categories"):
+        new_cat_name = st.text_input("New Category Name")
+        if st.button("Create Category"):
+            if new_cat_name:
+                supabase.table("categories").insert({"name": new_cat_name}).execute()
+                st.rerun()
         
         st.divider()
         
