@@ -1,6 +1,7 @@
 import streamlit as st
 from supabase import create_client, Client
 import random
+import time
 from linkpreview import link_preview
 
 # 1. Database Connection
@@ -11,15 +12,17 @@ supabase: Client = create_client(url, key)
 st.set_page_config(page_title="Family Bucket List", layout="wide")
 
 # --- FUNCTIONS ---
+@st.cache_data(ttl=600) # Cache categories for 10 mins
 def get_categories():
     res = supabase.table("categories").select("name").execute()
     return [item['name'] for item in res.data]
 
 def get_items():
-    res = supabase.table("bucket_items").select("*").execute()
+    # Only fetch what is needed to keep the app snappy
+    res = supabase.table("bucket_items").select("*").order("created_at", desc=True).execute()
     return res.data
 
-@st.cache_data(ttl=3600) # Caches the image for 1 hour so the app stays fast!
+@st.cache_data(ttl=3600)
 def get_preview_data(url):
     if not url or not url.startswith("http"):
         return None, None
@@ -36,48 +39,52 @@ def display_bucket_item(item, is_completed_view=False, context="cat"):
         label = f"✅ {label}"
     
     with st.expander(label):
-        # We no longer call get_preview_data() here. 
-        # We just show what's already in the 'item' dictionary from the DB.
         if item.get('image_url'):
             st.image(
                 item['image_url'], 
                 use_container_width=True, 
-                caption=item.get('preview_title') # This is the new field we're saving
+                caption=item.get('preview_title')
             )
         
-        # Now using 4 columns for 4 square buttons
-        col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
+        col1, col2, col3, col4 = st.columns(4)
         
         with col1:
             if not is_completed_view:
                 if st.button("✅", key=f"{context}_done_{item['id']}", help="Complete"):
                     supabase.table("bucket_items").update({"is_completed": True}).eq("id", item['id']).execute()
-                    st.rerun(scope="fragment")
+                    st.cache_data.clear() # Clear cache to reflect changes
+                    st.rerun()
             else:
                 if st.button("🔄", key=f"{context}_undo_{item['id']}", help="Restore"):
                     supabase.table("bucket_items").update({"is_completed": False}).eq("id", item['id']).execute()
-                    st.rerun(scope="fragment")
+                    st.cache_data.clear()
+                    st.rerun()
 
         with col2:
             heart_emoji = "💔" if item['is_favorite'] else "❤️"
             if st.button(heart_emoji, key=f"{context}_fav_{item['id']}", help="Favorite"):
                 supabase.table("bucket_items").update({"is_favorite": not item['is_favorite']}).eq("id", item['id']).execute()
-                st.rerun(scope="fragment")
+                st.cache_data.clear()
+                st.rerun()
 
         with col3:
-            # Change item.get('image_url') to item.get('website_url')
             if item.get('website_url') and item['website_url'].startswith("http"):
                 st.link_button("🌐", item['website_url'], help="Open Link")
             else:
-                st.button("🚫", key=f"{context}_nolink_{item['id']}", disabled=True, help="No link")
+                st.button("🚫", key=f"{context}_nolink_{item['id']}", disabled=True)
 
         with col4:
             if st.button("🗑️", key=f"{context}_del_{item['id']}", help="Delete"):
                 supabase.table("bucket_items").delete().eq("id", item['id']).execute()
-                st.rerun(scope="fragment")
+                st.cache_data.clear()
+                st.rerun()
 
-# Pre-fetch categories for the sidebar and the tabs
+# --- APP LOGIC ---
 categories = get_categories()
+all_items = get_items()
+
+# (Sidebar and Theme logic remains similar, but ensure st.cache_data.clear() 
+# is called whenever you insert/delete items so the UI updates!)
 
 # --- SIDEBAR ---
 with st.sidebar:
