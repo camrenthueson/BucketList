@@ -166,6 +166,10 @@ with st.sidebar:
                 st.success("Theme saved!")
                 st.rerun()
 
+        bg_color = new_bg
+        text_color = new_text
+        btn_color = new_btn
+    
     st.markdown(f"""
     <style>
     /* Target the root app containers */
