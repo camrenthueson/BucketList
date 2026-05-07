@@ -12,6 +12,14 @@ supabase: Client = create_client(url, key)
 st.set_page_config(page_title="Family Bucket List", layout="wide")
 
 # --- FUNCTIONS ---
+def get_theme_settings():
+    res = supabase.table("app_settings").select("*").execute()
+    # Convert list of rows into a dictionary for easy access
+    return {item['setting_name']: item['setting_value'] for item in res.data}
+
+def update_theme_setting(name, value):
+    supabase.table("app_settings").update({"setting_value": value}).eq("setting_name", name).execute()
+
 @st.cache_data(ttl=600) # Cache categories for 10 mins
 def get_categories():
     res = supabase.table("categories").select("name").execute()
@@ -142,11 +150,21 @@ with st.sidebar:
                     supabase.table("categories").delete().eq("name", del_cat).execute()
                     st.rerun()
 
-    with st.expander("🎨 Custom Theme"):
-        # Color pickers for full customization
-        bg_color = st.color_picker("Background Color", "#0E1117")
-        text_color = st.color_picker("Text Color", "#FFFFFF")
-        btn_color = st.color_picker("Button/Icon Color", "#FF4B4B")
+    # Load current settings from DB
+    current_theme = get_theme_settings()
+    
+    with st.sidebar:
+        with st.expander("🎨 Custom Theme"):
+            new_bg = st.color_picker("Background", current_theme.get('bg_color', "#0E1117"))
+            new_text = st.color_picker("Text", current_theme.get('text_color', "#FFFFFF"))
+            new_btn = st.color_picker("Buttons", current_theme.get('btn_color', "#FF4B4B"))
+            
+            if st.button("💾 Save Theme Permanently"):
+                update_theme_setting('bg_color', new_bg)
+                update_theme_setting('text_color', new_text)
+                update_theme_setting('btn_color', new_btn)
+                st.success("Theme saved!")
+                st.rerun()
 
     st.markdown(f"""
     <style>
