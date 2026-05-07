@@ -172,77 +172,62 @@ with st.sidebar:
     
     st.markdown(f"""
     <style>
-    /* Target the root app containers */
+    /* Main App Background & Text */
     .stApp, [data-testid="stHeader"], [data-testid="stAppViewContainer"] {{
         background-color: {bg_color} !important;
         color: {text_color} !important;
     }}
 
-    /* Force all headers and labels to use the chosen text color */
+    /* Global Text Color Fix */
     h1, h2, h3, p, span, label, .stMarkdown {{
         color: {text_color} !important;
     }}
 
-     /* Sidebar - Solid contrast */
+    /* SIDEBAR MOBILE FIX: Ensure high contrast on phone */
     [data-testid="stSidebar"] {{
-        background-color: rgba(0, 0, 0, 0.8) !important;
+        background-color: rgba(0, 0, 0, 0.95) !important;
+        border-right: 1px solid {btn_color};
     }}
-
-    /* Force Sidebar text to stay white so it's always readable */
     [data-testid="stSidebar"] * {{
         color: white !important;
     }}
 
-    /* Fix for Tab text color */
-    button[data-baseweb="tab"] p {{
-        color: {text_color} !important;
-    }}
-
-    /* Make expanders slightly visible against the new background */
-    .stExpander {{
-        background-color: rgba(255, 255, 255, 0.05) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    /* BUTTON FIX: Target Streamlit's specific button classes */
+    div.stButton > button, 
+    div.stLinkButton > a,
+    [data-testid="baseButton-secondary"],
+    [data-testid="baseButton-primary"] {{
+        background-color: {btn_color} !important;
+        color: white !important;
+        border: none !important;
         border-radius: 10px !important;
+        min-height: 45px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-weight: bold !important;
     }}
 
-    /* Square Buttons with Custom Color */
+    /* COLUMN BUTTONS: Force them to be square and centered */
     [data-testid="column"] div.stButton > button, 
     [data-testid="column"] div.stLinkButton > a {{
-        width: 45px !important;
-        height: 45px !important;
-        background-color: {btn_color} !important;
-        color: white !important; /* Icons usually look best in white */
-        border: none !important;
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
-        font-size: 22px !important;
-        border-radius: 8px !important;
+        width: 100% !important; /* Better for mobile touch targets */
+        max-width: 60px !important;
+        margin: 0 auto !important;
     }}
 
-    /* Keep the BIG buttons (Spin, Add, Create) normal size */
-    div.stButton > button {{
-        border-radius: 8px !important;
-    }}
-
-    /* Hover effect for buttons */
-    [data-testid="column"] div.stButton > button:hover {{
-        opacity: 0.8 !important;
-        color: white !important;
-    }}
-
-    /* Center the icons in the columns */
-    [data-testid="column"] {{
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }}
-
-    /* Tab text fix */
+    /* Tab Visibility Fix */
     button[data-baseweb="tab"] p {{
         color: {text_color} !important;
+        font-size: 18px !important;
     }}
-    
+
+    /* Fix for input fields so you can see what you're typing */
+    input {{
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        color: white !important;
+        border: 1px solid {btn_color} !important;
+    }}
     </style>
 """, unsafe_allow_html=True)
 
